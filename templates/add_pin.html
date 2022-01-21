@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<!-- Source: https://github.com/StartBootstrap/startbootstrap-creative.git -->
+<html lang="en">
+
+<head>
+  {% include 'header.html' %}
+</head>
+
+<body id="page-top" style="padding-top: 77px">
+  <!-- Navigation-->
+  <header>
+
+
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3" id="secondaryNav" style="background-color: #fff">
+      <div class="container">
+        <a class="navbar-brand js-scroll-trigger" href="/">PrincetonPlaces</a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+          data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false"
+          aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto my-2 my-lg-0">
+            <li class="nav-item"><a class="nav-link
+                         js-scroll-trigger" href="logout">Log Out</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+
+  <div id="myAlert" class="fixed-top alert alert-danger fade">
+    <p id="myAlertMessage"></p>
+  </div>
+  <br>
+
+
+  <br>
+  <!-- Pin Info -->
+  <section class="page-section" id="pin_info" style="padding: 0px;">
+    <div class="container">
+      <h2 id='testid' class="text-center mt-0">Add a Pin</h2>
+      <hr class="divider my-4" />
+      <h3 class="h4 text-center mb-2">Select a location for your pin by clicking on the map</h3>
+      <!-- Map -->
+      <div id="map_section" class="bg-primary" style="padding-top: 15px; padding-bottom: 15px;
+        height: calc(65vh)">
+        <section class="page-section bg-primary" id="map" style="margin-left:
+          15px; margin-right: 15px; height: 100%">
+          <script>
+            pins = JSON.parse({{ pinsJS | tojson}})
+            var lastMarker = null
+            // Initialize and add the map
+            function initMap() {
+              // The location of Princeton
+              console.log("Making map")
+              var princeton = { lat: 40.345539, lng: -74.657087 };
+              // The map, centered at Princeton
+              var map = new google.maps.Map(
+                document.getElementById('map'), { zoom: 16, center: princeton });
+
+              var myPosButton = document.getElementById('my-pos');
+
+              myPosButton.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                      const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                      };
+                      console.log(pos.lat + " " + pos.lng);
+                      // delete previous marker
+                      if (lastMarker != null) {
+                        lastMarker.setMap(null);
+                      }
+
+                      var xInput = document.getElementById('lat')
+                      xInput.setAttribute('value', pos.lat)
+                      var yInput = document.getElementById('lng')
+                      yInput.setAttribute('value', pos.lng)
+
+                      let latLng = new google.maps.LatLng(pos.lat, pos.lng);
+                      const marker = new google.maps.Marker({
+                        position: latLng, map: map, draggable: true
+                      })
+                      lastMarker = marker;
+                      map.setCenter(pos);
+                    });
+
+                }
+              });
+
+              map.addListener('click', function (mapsMouseEvent) {
+                // delete the previous marker
+                if (lastMarker != null) {
+                  lastMarker.setMap(null);
+                }
+
+                // Create a new marker and fill form values.
+                var latLng = mapsMouseEvent.latLng
+                var xInput = document.getElementById('lat')
+                xInput.setAttribute('value', latLng.lat())
+                var yInput = document.getElementById('lng')
+                yInput.setAttribute('value', latLng.lng())
+                const marker = new google.maps.Marker({
+                  position: latLng, map: map, draggable: true
+                });
+                lastMarker = marker;
+              });
+              let url = "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
+              for (var i = 0; i < pins.length; i += 5) {
+                const latLng = new google.maps.LatLng(pins[i + 1], pins[i + 2])
+                const marker = new google.maps.Marker({
+                  position: latLng, map: map,
+                  icon: {
+                    url: url
+                  }
+                })
+              }
+            }
+          </script>
+        </section>
+      </div>
+      <div id="add-photo" style="display: inline-block; margin: auto;
+                  width:100vw;" class="container">
+        <form class="form-group" action="create_pin" method="post" enctype="multipart/form-data">
+          <table style="margin: auto; position: relative;border-collapse: separate; border-spacing:
+                  10px;">
+            <tr>
+              <td>
+              </td>
+              <td>
+                <button id="my-pos" class="btn btn-primary">Use My Location</button>
+              </td>
+            </tr>
+            <tr>
+              <td align="right">
+                <label class="required" for="pin_descrip">Pin Name: </label>
+              </td>
+              <td>
+                <input id="pin_name" type="text" name="pin_descrip"><br>
+              </td>
+            </tr>
+            <tr>
+              <td align="right">
+                <label class="required" for="img">Select image: </label>
+              </td>
+              <td>
+                <input class="form-control-file" type="file" id="img" name="img" accept="image/*"><br>
+              </td>
+            </tr>
+            <tr>
+              <td align="right">
+                <label for="descrip">Add a description for your photo: </label>
+              </td>
+              <td>
+                <input id="photo_descrip" type="text" name="descrip"><br>
+              </td>
+            </tr>
+            <tr valign="top">
+              <td align="right">
+                <label for="category">Choose categories: </label>
+              </td>
+              <td>
+                {% include 'categories.html' %}
+              </td>
+            </tr>
+            <tr>
+              <td>
+                Show your netid as poster?
+              </td>
+              <td>
+                <input id="anon_box" type="checkbox" name="anon">
+                <label for="anon"> Anonymous</label>
+              </td>
+            </tr>
+            <tr>
+              <td>
+              </td>
+              <td>
+                <button id='submit_btn' type="submit" class="btn btn-primary">Submit</button>
+              </td>
+            </tr>
+          </table>
+          <input type="hidden" id="lat" step="any" name="lat">
+          <input type="hidden" id="lng" step="any" name="lng">
+      </div>
+      </form>
+    </div>
+  </section>
+  {% include 'footer.html' %}
+  <!-- Footer-->
+  <script defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBALg7pjYcrHs0rof4TKndChN8IT2JH5es&callback=initMap&libraries=&v=weekly">
+    </script>
+
+
+  <!-- Made using this tutorial: https://formden.com/blog/validate-contact-form-jquery -->
+  <style>
+    input.invalid,
+    textarea.invalid {
+      border: 2px solid red;
+    }
+  </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script>
+    $(document).ready(function () {
+
+      var removeInvalid = function () {
+        $(this).removeClass('invalid');
+      };
+
+      $('#pin_name').change(removeInvalid);
+      $("#img").change(removeInvalid);
+      $('#photo_descrip').change(removeInvalid);
+
+
+      $("#submit_btn").click(function (event) {
+        var pinName = $('#pin_name');
+        var photoDescription = $('#photo_descrip');
+        var lat = $('#lat');
+        var lng = $('#lng');
+        var img = $('#img');
+
+        var inputFileType = img.val().split('.')[1];
+        var accepted_file_types = ['jpg', 'jpeg', 'jpe', 'png', 'bmp', 'tif', 'tiff', 'gif'];
+
+        $("#myAlertMessage").text('');
+
+        if (!lat.val() || !lng.val()) {
+          $("#myAlertMessage").append('Please select a new point on the map.<br>');
+          $("#myAlert").addClass('show');
+          event.preventDefault();
+
+        }
+
+        else if (lat.val() > 40.3755 || lng.val() < -74.7219 || lat.val() < 40.32832 || lng.val() > -74.6468) {
+          $("#myAlertMessage").append('Please choose a point near Princeton.<br>');
+          $("#myAlert").addClass('show');
+          event.preventDefault();
+        }
+
+
+
+        if (!pinName.val()) {
+          $("#pin_name").addClass('invalid');
+          $("#myAlertMessage").append('Please enter a pin Name.<br>');
+          $("#myAlert").addClass('show');
+          event.preventDefault();
+        }
+
+        else if (pinName.val().length > 50) {
+          $("#pin_name").addClass('invalid');
+          $("#myAlertMessage").append('Enter a pin name under 50 characters.<br>');
+          $("#myAlert").addClass('show');
+          event.preventDefault();
+        }
+
+
+        if (!img.val()) {
+          $("#img").addClass('invalid');
+          $("#myAlertMessage").append('Please select an image file.<br>');
+          $("#myAlert").addClass('show');
+          event.preventDefault();
+        }
+
+        else if (!(accepted_file_types.includes(inputFileType))) {
+          $("#img").addClass('invalid');
+          $("#myAlertMessage").append('Your file is not an image.<br>Please select an image file.<br>');
+          $("#myAlert").addClass('show');
+          event.preventDefault();
+        }
+
+
+        if (!photoDescription.val()) {
+          $("#photo_descrip").addClass('invalid');
+          $("#myAlertMessage").append('Please enter a photo description.<br>');
+          $("#myAlert").addClass('show');
+          event.preventDefault();
+        }
+
+        else if (photoDescription.val().length > 200) {
+          $("#photo_descrip").addClass('invalid');
+          $("#myAlertMessage").append('Enter a photo description less than 200 characters.<br>');
+          $("#myAlert").addClass('show');
+          event.preventDefault();
+        }
+
+      });
+    });
+
+  </script>
+</body>
+
+</html>

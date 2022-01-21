@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>PrincetonPlacesAdmin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+        integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/style.css') }}">
+
+</head>
+<h1 class='bg-secondary text-white' style="text-align: center;">ADMINS TABLE</h1>
+<table class="table">
+    <tr style="text-align: center;">
+        <th><strong>Admins</strong></th>
+        <th><strong>Remove Admin?</strong></th>
+    </tr>
+    {% if admins|length == 0: %}
+    {% else: %}
+    {% for admin in admins: %}
+    <tr style="text-align: center;">
+        <td>{{admin}}</td>
+        <td>
+            <div class="container">
+                <form action='adminDeleteAdmin'>
+                    <button id='admin' name='admin' value='{{admin}}'>DELETE
+                        ADMIN</button>
+                </form>
+            </div>
+
+        </td>
+
+    </tr>
+
+
+    {% endfor %}
+    {% endif %}
+</table>
+
+
+
+<form action="/adminAddAdmin" method="get" style="text-align: center;">
+    <label for="newAdmin"> Add new admin: </label>
+    <input id="newAdmin" name="newAdmin" />
+</form>
+
+
+
+<h1 class='bg-secondary text-white' style="text-align: center;">ADMIN PINS TABLE</h1>
+
+<table class="table">
+    <tr style="text-align: center;">
+        <th><strong>Pinid</strong></th>
+        <th><strong>X</strong></th>
+        <th><strong>Y</strong></th>
+        <th><strong>Description</strong></th>
+        <th><strong>Time </strong></th>
+        <th><strong>Netid </strong></th>
+    </tr>
+    {% if pins|length == 0: %}
+    {% else: %}
+    {% for pin in pins: %}
+    <tr style="text-align: center;">
+        <td><a href='/admin/pin?pinid={{pin.getPinid()}}'>{{pin.getPinid()}}</a></td>
+        <td>{{pin.getX()}}</td>
+        <td>{{pin.getY()}}</td>
+        <td>{{pin.getDescrip()}}</td>
+        <td>{{pin.getTime()}}</td>
+        <td>{{pin.getNetid()}}</td>
+    </tr>
+    {% endfor %}
+    {% endif %}
+</table>
+<br>
+<br>
+</html>

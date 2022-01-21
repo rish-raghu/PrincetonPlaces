@@ -1,0 +1,113 @@
+<div class="modal fade" id="report_modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal_title"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" id="opts_body">
+            <span id="report_opts"></span>
+            <input type="radio" id="opt_other" name="reason" value="Other">
+            <label for="opt_other">Other</label><br>
+            &nbsp;&nbsp;&nbsp;
+            <input type="text" id="opt_other_text">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="report_submit">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>
+            Report</button>
+        </div>
+      </div>
+    </div>
+</div>
+
+<script>
+
+    $(document).ready(function() {
+      $("#opt_other_text").hide();
+    });
+
+    // show text field only when "Other" is selected
+    $("#opts_body").on('change', function() {
+          $("#report_submit").prop("disabled", false);
+          if ($("input[name='reason']:checked").val() === "Other") {
+            $("#opt_other_text").show();
+            $("#opt_other_text").focus();
+          } else {
+            $("#opt_other_text").hide();
+          }
+    });
+
+    // open modal
+    $('#report_modal').on('show.bs.modal', function(event){
+        clearModal();
+        $("#report_submit").prop("disabled", true);
+
+        // store whether this is a pin or photo report in modal data
+        let report_type = $(event.relatedTarget).data('report_type');
+        $('#report_modal').data('report_type', report_type);
+
+        // populate report reasons depending on report type
+        $('#report_opts').load('fetch_report_opts?report_type=' + report_type);
+        
+        // set modal title
+        if(report_type === 'photo') {
+          $('#modal_title').text('Report this post')
+          
+          // if photo report, also store corresponding photo_id
+          let photo_id = $(event.relatedTarget).data('photo_id');
+          $('#report_modal').data('photo_id', photo_id);
+        } else if(report_type === 'pin') {
+          $('#modal_title').text('Report this pin')
+        }
+    });
+
+    // send report data to server
+    $('#report_submit').click(function() {
+        $("#spinner").show();
+        $("#report_submit").prop("disabled", true);
+        
+        let reason = $("input[name='reason']:checked").val();
+        if (reason == "Other") {
+          reason = reason + ": " + $("#opt_other_text").val();
+        }
+
+        let report_type = $('#report_modal').data('report_type');
+        if(report_type === 'photo') {
+          let photo_id = $('#report_modal').data('photo_id');
+          $.ajax({
+              type: 'GET',
+              url: '/make_photo_report?reason=' + reason + '&photo_id=' + photo_id,
+              success: reportSuccess
+          });
+        } else if(report_type === 'pin') {
+          $.ajax({
+              type: 'GET',
+              url: '/make_pin_report?reason=' + reason + '&pin_id={{pinid}}',
+              success: reportSuccess
+          });
+        }
+        
+    });
+
+    // clear modal fields
+    function clearModal() {
+        $("#opt_other_text").val("");
+        $("#opt_other_text").hide();
+        $("#spinner").hide();
+        $("input[name='reason']:checked").prop('checked', false);
+    }
+
+    function reportSuccess() {
+        clearModal();
+        $('#report_modal').modal('hide');
+        // $("#alertspan").html("<div id='myAlert' class='alert alert-success alert-dismissible fade show'>\
+        //     <button type='button' class='close' data-dismiss='alert'>&times;</button>\
+        //     Post reported\
+        //   </div>\
+        //   <br>")
+    }
+</script>

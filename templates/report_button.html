@@ -1,0 +1,11 @@
+<button id="report_btn" type="button" class="btn btn-outline-danger shadow-none" onclick="pop_modal(this)" data-report_type="photo" data-photo_id="{{photo.getPhotoId()}}">
+    <i class="fa fa-exclamation-circle"></i>
+</button>
+
+<script>
+    function pop_modal(btn) {
+        event.preventDefault();
+        event.stopPropagation();
+        $('#report_modal').modal('show', btn);
+    }; 
+</script>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<!-- Source: https://github.com/StartBootstrap/startbootstrap-creative.git -->
+<html lang="en">
+
+<head>
+  {% include 'header.html' %}
+</head>
+
+<body id="page-top" style="padding-top: 77px">
+  <!-- Navigation-->
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3" id="secondaryNav" style="background-color: #fff">
+      <div class="container">
+        <a class="navbar-brand js-scroll-trigger" href="/">PrincetonPlaces</a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+          data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false"
+          aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto my-2 my-lg-0">
+            <li class="nav-item"><a class="nav-link
+                         js-scroll-trigger" href="logout">Log Out</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div id="myAlert" class="fixed-top alert alert-danger fade">
+    <p id="myAlertMessage"></p>
+  </div>
+  <br>
+  <!-- Pin Info -->
+  <section class="page-section" id="pin_info" style="padding-top: 20px;
+          padding-bottom: 20px;">
+    <div class="container">
+      <h2 class="text-center mt-0">Update Description/Delete Photo</h2>
+      <hr class="divider my-4" />
+      <h3 class="h4 text-center mb-2">{{photo.getDescription()}}</h3>
+      <img style="margin-left: auto; display: block; margin-right: auto;" src="{{photo.getThumbnail()}}" alt="" />
+      <div id="add-photo" style="display: inline-block; margin: auto;
+                  width:100vw;" class="container">
+        <!--
+                These might be helpful for more pin information
+                <h3 class="h4 mb-2">Sturdy Themes</h3>
+                <p class="text-muted mb-0">Our themes are updated regularly to keep them bug free!</p>
+                -->
+        <table style="margin: auto; position: relative;border-collapse: separate; border-spacing:
+               10px;">
+          <tr>
+            <td>
+              <form class="form-group" action="/make_edit/{{photo.getPhotoId()}}" method="post"
+                enctype="multipart/form-data">
+                <table style="margin: auto; position: relative;border-collapse: separate; border-spacing:
+                    10px;">
+                  <tr>
+                    <td align="right">
+                      <label for="descrip">Description: </label>
+                    </td>
+                    <td>
+                      <textarea id="photo_descrip" name="descrip" rows="4"
+                        cols="30">{{photo.getDescription()}}</textarea>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="right" style="vertical-align: top;">
+                      Categories:
+                    </td>
+                    <td>
+                      {% include 'categories.html' %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      Show your netid as poster?
+                    </td>
+                    <td>
+                      <input type="checkbox" name="anon" {{"checked" if
+                        photo.getAnon() }}>
+                      <label for="anon"> Anonymous</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                    </td>
+                    <td>
+                      <button type="submit" id="submit_btn" class="btn btn-primary">Submit</button>
+                      <input type="hidden" name="pinid" value={{pinid}}>
+                      <a style="margin-left: 10px; text-decoration: none;" class="btn btn-primary"
+                        href="/delete/{{photo.getPhotoId()}}?pinid={{photo.getPinid()}}">
+                        Delete Photo</a></button>
+                    </td>
+                  </tr>
+                </table>
+              </form>
+      </div>
+      </td>
+      </tr>
+      </table>
+    </div>
+  </section>
+  {% include 'footer.html' %}
+
+  <style>
+    input.invalid,
+    textarea.invalid {
+      border: 2px solid red;
+    }
+  </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script>
+    $(document).ready(function () {
+
+      var removeInvalid = function () {
+        $(this).removeClass('invalid');
+      };
+
+      $('#photo_descrip').change(removeInvalid);
+
+
+      $("#submit_btn").click(function (event) {
+        var photoDescription = $('#photo_descrip');
+
+
+        $("#myAlertMessage").text('');
+
+
+        if (!photoDescription.val()) {
+          $("#photo_descrip").addClass('invalid');
+          $("#myAlertMessage").append('Please enter a photo description.<br>');
+          $("#myAlert").addClass('show');
+          event.preventDefault();
+        }
+
+        else if (photoDescription.val().length > 200) {
+          $("#photo_descrip").addClass('invalid');
+          $("#myAlertMessage").append('Enter a photo description less than 200 characters.<br>');
+          $("#myAlert").addClass('show');
+          event.preventDefault();
+        }
+
+        // $("#myAlert").toggle();
+      });
+    });
+
+  </script>
+</body>
+
+</html>

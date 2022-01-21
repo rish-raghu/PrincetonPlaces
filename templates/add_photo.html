@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<!-- Source: https://github.com/StartBootstrap/startbootstrap-creative.git -->
+<html lang="en">
+
+<head>
+  {% include 'header.html' %}
+</head>
+
+<body id="page-top" style="padding-top: 77px">
+  <!-- Navigation-->
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3" id="secondaryNav" style="background-color: #fff">
+      <div class="container">
+        <a class="navbar-brand js-scroll-trigger" href="/">PrincetonPlaces</a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+          data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false"
+          aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto my-2 my-lg-0">
+            <li class="nav-item"><a class="nav-link
+                         js-scroll-trigger" href="logout">Log Out</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div id="myAlert" class="fixed-top alert alert-danger fade">
+    <p id="myAlertMessage"></p>
+  </div>
+
+  <br>
+  <!-- Pin Info -->
+  <section class="page-section" id="pin_info" style="padding-top: 20px;
+          padding-bottom: 20px;">
+    <div class="container">
+      <h2 class="text-center mt-0">{{pin_descrip}}</h2>
+      <hr class="divider my-4" />
+      <h3 class="h4 text-center mb-2">Add a Photo</h3>
+      <div id="add-photo" style="display: inline-block; margin: auto;
+                  width:100vw;" class="container">
+        <form class="form-group" action="upload_photo" method="post" enctype="multipart/form-data">
+          <table style="margin: auto; position: relative;border-collapse: separate; border-spacing:
+                  10px;">
+            <tr>
+              <td align="right">
+                <label for="img">Select image: </label>
+              </td>
+              <td>
+                <input type="file" id="img" name="img" accept="image/*"><br>
+                <p id="WARNING">
+              </td>
+            </tr>
+            <tr>
+              <td align="right">
+                <label for="descrip">Add a description: </label>
+              </td>
+              <td>
+                <input id='photo_descrip' type="text" name="descrip">
+              </td>
+            </tr>
+            <tr valign="top">
+              <td align="right">
+                <label for="category">Choose categories: </label>
+              </td>
+              <td>
+                {% include 'categories.html' %}
+              </td>
+            </tr>
+            <tr>
+              <td>
+                Show your netid as poster?
+              </td>
+              <td>
+                <input type="checkbox" name="anon">
+                <label for="anon"> Anonymous</label>
+              </td>
+            </tr>
+            <tr>
+              <td>
+              </td>
+              <td>
+                <button id="submit_btn" type="submit" class="btn btn-primary">Submit</button>
+                <input type="hidden" name="pinid" value={{pinid}}>
+              </td>
+            </tr>
+          </table>
+      </div>
+      </form>
+    </div>
+  </section>
+  {% include 'footer.html' %}
+
+  <style>
+    input.invalid,
+    textarea.invalid {
+      border: 2px solid red;
+    }
+  </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script>
+    $(document).ready(function () {
+
+      var removeInvalid = function () {
+        $(this).removeClass('invalid');
+      };
+
+      $('#photo_descrip').change(removeInvalid);
+      $("#img").change(removeInvalid);
+
+
+      $("#submit_btn").click(function (event) {
+        var photoDescription = $('#photo_descrip');
+        var img = $('#img');
+
+
+        var inputFileType = img.val().split('.')[1];
+        var accepted_file_types = ['jpg', 'jpeg', 'jpe', 'png', 'bmp', 'tif', 'tiff', 'gif'];
+
+        $("#myAlertMessage").text('');
+
+
+        if (!img.val()) {
+          $("#img").addClass('invalid');
+          $("#myAlertMessage").append('Please select an image file.<br>');
+          $("#myAlert").addClass('show');
+          event.preventDefault();
+        }
+
+        else if (!(accepted_file_types.includes(inputFileType))) {
+          $("#img").addClass('invalid');
+          $("#myAlertMessage").append('Your file is not an image.<br>Please select an image file.<br>');
+          $("#myAlert").addClass('show');
+          event.preventDefault();
+        }
+
+
+        if (!photoDescription.val()) {
+          $("#photo_descrip").addClass('invalid');
+          $("#myAlertMessage").append('Please enter a photo description.<br>');
+          $("#myAlert").addClass('show');
+          event.preventDefault();
+        }
+
+        else if (photoDescription.val().length > 200) {
+          $("#photo_descrip").addClass('invalid');
+          $("#myAlertMessage").append('Enter a photo description less than 200 characters.<br>');
+          $("#myAlert").addClass('show');
+          event.preventDefault();
+        }
+
+        // $("#myAlert").toggle();
+      });
+    });
+
+  </script>
+</body>
+
+</html>

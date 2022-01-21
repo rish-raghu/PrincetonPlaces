@@ -1,0 +1,234 @@
+<form id="filter_form">
+  <label>Pin Name:</label>
+  <input type="text" id="descrip" name="descrip" value="{{descrip}}">
+  <br><br>
+  <label>Date Posted:</label>
+  <table>
+    <tr>
+      <td>
+        <label for="start_date">From:</label>
+      </td>
+      <td>
+        <input type="date" id="start_date" name="start_date" value={{dates.start_date}}>
+      </td>
+      <td style="width: 40px;">
+        <button id="start_clear" type="button" class="btn btn-sm btn-outline-primary py-0" style="font-size: 0.8em;">X</button>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label for="end_date">Until:</label>
+      </td>
+      <td>
+        <input type="date" id="end_date" name="end_date" value={{dates.end_date}}>
+      </td>
+      <td style="width: 40px;">
+        <button id="end_clear" type="button" class="btn btn-sm btn-outline-primary py-0" style="font-size: 0.8em;">X</button>
+      </td>
+    </tr>
+  </table>
+  <br>
+  <label>Categories:</label><br>
+  {% include 'categories.html' %}
+  <button type="button" id="clear_filter" class="btn btn-light btn-sm mr-auto">Clear Filter</button>
+</form>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+
+<script type='module'>
+  // map element is managed with an externally defined object
+  import {HomepageMap} from "{{ url_for('static', filename='js/map.js') }}";
+  window.map = new HomepageMap();
+</script>
+
+<script>
+  'use strict';
+  
+  let request = null;
+
+  $(document).ready(function() {
+     setup();
+  });
+
+  // runs once after page is loaded
+  function setup() {
+
+    $('#filter_form').submit(function() {
+      return false;
+    });
+
+    initializeState();
+    
+    // install event handlers
+    $('#descrip').on('input', getPins);
+    $('#start_date').on('change', handleStartDateChange);
+    $('#start_clear').on('click', handleStartClearClick);
+    $('#end_date').on('change', handleEndDateChange);
+    $('#end_clear').on('click', handleEndClearClick);
+    $('input[name=category]').on('change', getPins);
+    $('#clear_filter').on('click', handleClearFilter);
+    $('#view_type_btn').on('click', handleViewChange);
+    $('input[name=map_type]').on('change', handleMapChange);
+    
+    initializeMap("{{map_type}}");
+  }
+
+  // display appropriate buttons on page load
+  function initializeState() {
+    // initialize clear button visibility
+    if($('#start_date').val() === "") {
+      $("#start_clear").hide();
+    } else {
+      $("#start_clear").show();
+    }
+    if($('#end_date').val() === "") {
+      $("#end_clear").hide();
+    } else {
+      $("#end_clear").show();
+    }
+
+    // choosing dates after today is disabled
+    let today = new Date().toISOString().substring(0, 10);
+    $('#start_date').prop('max', today);
+    $('#end_date').prop('max', today);
+
+    // intial setup of "private" vs "all" view
+    if('{{view_type}}' === 'private') {
+      $('#view_type_content').html('All Pins<br><i>(Viewing Your Pins)');
+      $('#view_type_content').val('private');
+    } else if('{{view_type}}' === 'all') {
+      $('#view_type_content').html('My Pins<br><i>(Viewing All Pins)');
+      $('#view_type_content').val('all');
+    }
+  }
+
+  function handleStartDateChange() {
+    if($('#start_date').val() === "") {
+      $("#start_clear").hide();
+    } else {
+      $("#start_clear").show();
+    }
+
+    getPins();
+  }
+
+  function handleEndDateChange() {
+    if($('#end_date').val() === "") {
+      $("#end_clear").hide();
+    } else {
+      $("#end_clear").show();
+    }
+
+    getPins();
+  }
+
+  function handleStartClearClick() {
+    $("#start_date").val("");
+    $("#start_clear").hide();
+    
+    getPins();
+  }
+
+  function handleEndClearClick() {
+    $("#end_date").val("");
+    $("#end_clear").hide();
+
+    getPins();
+  }
+
+  function handleClearFilter() {
+    $("#clear_filter").blur();
+    $('#descrip').val('');
+    $('#start_date').val('');
+    $('#end_date').val('');
+    $('input[name=category]').prop('checked', false);
+    $("#start_clear").hide();
+    $("#end_clear").hide();
+    
+    getPins();
+  }
+
+  function handleViewChange() {
+    let curr_view = $('#view_type_content').val();
+    
+    if(curr_view === 'all') {
+      $('#view_type_content').html('All Pins<br><i>(Viewing Your Pins)');
+      $('#view_type_content').val('private');
+    } else if(curr_view === 'private') {
+      $('#view_type_content').html('My Pins<br><i>(Viewing All Pins)');
+      $('#view_type_content').val('all');
+    }
+
+    getPins();
+  }
+
+  function handleMapChange() {
+    let map_type = $('input[name=map_type]:checked').val();
+    initializeMap(map_type);
+  }
+
+  // render a new map of type map_type ('gmap' or 'arcmap') and place pins
+  function initializeMap(map_type) {
+    
+    // Uses promises to ensure that map is rendered before pins added
+    require(['dojo/Deferred'], function(Deferred) {
+      function asyncProcess() {
+        var deferred = new Deferred();
+        map.initMap(map_type, deferred);
+        return deferred.promise;
+      }
+
+      var process = asyncProcess();
+      process.then(function(results) {
+        getPins();
+      })
+      
+    })
+  }
+
+  // requests pins and photos from server based on filtering options
+  function getPins() {
+
+    let view_type = $('#view_type_content').val() || 'all'; 
+
+    let descrip = $('#descrip').val();
+    descrip = descrip ? encodeURIComponent(descrip) : "";
+
+    let start_date = $('#start_date').val();
+    let end_date = $('#end_date').val();
+
+    let category_els = $('input[name=category]:checked');
+    let category_str = "";
+    for(let category_el of category_els) {
+      category_str += "&category=" + $(category_el).val();
+    }
+   
+    let map_type = $('input[name=map_type]:checked').val();
+
+    if (request != null) request.abort();
+
+     $.ajax({
+        type: 'GET',
+        url: '/pin_results?descrip=' + descrip
+              + '&start_date=' + start_date
+              + '&end_date=' + end_date
+              + category_str
+              + '&view_type=' + view_type
+              + '&map_type=' + map_type,
+        success: handleResponse
+    });
+  }
+
+  // handles pin and photo data returned by server
+  function handleResponse(responseJSON) {
+     map.clearMarkers();
+     try {
+        let response = JSON.parse(responseJSON);
+        map.makeMarkers(response['pins'], response['photos']);
+      } 
+      catch (err) {
+        window.location.replace(window.location.origin + "/error");
+      }
+  }
+
+</script>

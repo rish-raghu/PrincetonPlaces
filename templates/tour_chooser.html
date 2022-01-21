@@ -1,0 +1,94 @@
+<script>
+    pins = JSON.parse({{ pinsJS | tojson}})
+    photos = JSON.parse({{ photoJS | tojson}})
+    tour = JSON.parse({{tourJS | tojson}})
+    mid = JSON.parse({{midJS | tojson}})
+
+    function initMap() {
+        // The location of Princeton
+        const directionsService = new google.maps.DirectionsService();
+        const directionsRenderer = new google.maps.DirectionsRenderer();
+        var princeton = { lat: 40.345539, lng: -74.657087 };
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: princeton,
+            zoom: 16,
+        });
+        directionsRenderer.setMap(map);
+        const onChangeHandler = function () {
+            id = document.getElementById("tourChooser").value
+            calculateAndDisplayRoute(directionsService, directionsRenderer, id);
+        };
+        document.getElementById("tourChooser").addEventListener("change", onChangeHandler);
+        infoWindow = new google.maps.InfoWindow();
+        const locationButton = document.createElement("button");
+        locationButton.textContent = "Pan to Current Location";
+        locationButton.classList.add("custom-map-control-button");
+        map.controls[google.maps.ControlPosition.TOP_CENTER].push(locationButton);
+        locationButton.addEventListener("click", () => {
+            // Try HTML5 geolocation.
+            if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                const pos = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                };
+                infoWindow.setPosition(pos);
+                infoWindow.setContent("Location found.");
+                infoWindow.open(map);
+                map.setCenter(pos);
+                },
+                () => {
+                handleLocationError(true, infoWindow, map.getCenter());
+                }
+            );
+            } else {
+            // Browser doesn't support Geolocation
+            handleLocationError(false, infoWindow, map.getCenter());
+            }
+        });
+    }
+    function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+        infoWindow.setPosition(pos);
+        infoWindow.setContent(
+            browserHasGeolocation
+            ? "Error: The Geolocation service failed."
+            : "Error: Your browser doesn't support geolocation."
+        );
+        infoWindow.open(map);
+    }
+    function calculateAndDisplayRoute(directionsService, directionsRenderer, id) {
+        var index = -1
+        var i = 0
+        var len = 0
+        var middle = []
+        while(i < tour.length) {
+            len = tour[i]
+            if(tour[i + 1] == id) {
+                index = i + 1
+                break
+            }
+            i += (len * 2) + 3
+        }
+        if(len > 2) {
+            for(var i = 0; i < (len-2)*2; i+=2) {
+                middle.push({location: new google.maps.LatLng(tour[index + 6 + i], tour[index + i + 7]), stopover: true})
+            }
+        }
+        directionsService.route(
+            {
+            origin: new google.maps.LatLng(tour[index + 2], tour[index + 3]),
+            destination: new google.maps.LatLng(tour[index + 4], tour[index + 5]),
+            waypoints: middle,
+            travelMode: google.maps.TravelMode.WALKING,
+            },
+            (response, status) => {
+            if (status === "OK") {
+                directionsRenderer.setDirections(response);
+            } else {
+                window.alert("Directions request failed due to " + status);
+            }
+            }
+        );
+    }
+</script>

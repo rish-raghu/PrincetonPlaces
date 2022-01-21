@@ -1,0 +1,40 @@
+<script>
+  function toggleLike(photo_id, netid, event) {
+    event.preventDefault();
+    event.stopPropagation();
+    let button = "#like_btn_" + photo_id;
+    let like_count = "#like_count_" + photo_id;
+    let url = window.location.origin + "/like";
+    let count = Number($(like_count).html());
+    $.get(url, {netid: netid, photoid: photo_id}, function(data) {
+      console.log(data);
+      console.log(data == 'liked');
+      if (data == 'liked') {
+        count += 1;
+      } else {
+        count -= 1;
+      }
+      $(like_count).html(count);
+    });
+    $(button).toggleClass("btn-outline-danger");
+    $(button).toggleClass("btn-danger");
+  }
+</script>
+
+{% macro like_button(photo) %}
+{%    if photo.getLiked(): %}
+        <!-- Liked/not liked -->
+        <button id="like_btn_{{photo.getPhotoId()}}" type="button"
+          class="btn btn-danger shadow-none"
+          onclick="toggleLike('{{photo.getPhotoId()}}','{{netid}}',event)">
+{%    else: %}
+        <!-- Liked/not liked -->
+        <button id="like_btn_{{photo.getPhotoId()}}" type="button" 
+          class="btn btn-outline-danger shadow-none" 
+          onclick="toggleLike('{{photo.getPhotoId()}}','{{netid}}',event)">
+{%    endif %}
+        <i class="fa fa-heart"></i>
+      </button><br>
+      <div style="display: inline;" id="like_count_{{photo.getPhotoId()}}">
+      {{ photo.getLikes() }}</div>
+{% endmacro %}

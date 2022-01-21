@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<!-- Source: https://github.com/StartBootstrap/startbootstrap-creative.git -->
+<html lang="en">
+    <head>
+      {% include 'header.html' %}
+    </head>
+    <body id="page-top" style="padding-top: 77px">
+        <!-- Navigation-->
+        <header>
+          <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3"
+          id="secondaryNav" style="background-color: #fff">
+              <div class="container">
+                  <a class="navbar-brand js-scroll-trigger"
+                  href="/">PrincetonPlaces</a>
+                  <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                  <div class="collapse navbar-collapse" id="navbarResponsive">
+                      <ul class="navbar-nav ml-auto my-2 my-lg-0">
+                         <li class="nav-item"><a class="nav-link
+                         js-scroll-trigger" href="logout">Log Out</a></li>
+                      </ul>
+                  </div>
+              </div>
+          </nav>
+        </header>
+        <section class="page-section" id="pin_info" style="padding-top: 20px;
+          padding-bottom: 20px;">
+            <div class="container">
+          <!-- Map -->
+          <div id="map_section" class="bg-primary" style="padding-top: 15px; padding-bottom: 15px;
+          height: calc(80vh)">
+            <section class="page-section bg-primary" id="map" style="margin-left:
+            15px; margin-right: 15px; height: 100%">
+              {% include 'tour_chooser.html' %}
+            </section>
+          </div>
+          <br>
+              <select id="tourChooser">
+                <option value="#">Select a tour...</option>
+                {% for tour in tours: %}
+                <option value="{{tour.getTourID()}}">{{tour.getDescription()}}</option>
+                {% endfor %}
+              </select>
+              <button onclick="window.location.href='/tour'" class="btn btn-primary"
+                style="margin-left: 20px;">
+                Create a tour</button>
+            </div>
+          </section>
+        {% include 'footer.html' %}
+        <script defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBALg7pjYcrHs0rof4TKndChN8IT2JH5es&callback=initMap">
+        </script>
+    </body>
+</html>

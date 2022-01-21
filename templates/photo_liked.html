@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<!-- Source: https://github.com/StartBootstrap/startbootstrap-creative.git -->
+<html lang="en">
+    <head>
+      {% include 'header.html' %}
+    </head>
+
+<body id="page-top" style="padding-top: 77px">
+    <!-- Navigation-->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3" id="secondaryNav"
+            style="background-color: #fff">
+            <div class="container">
+                <a class="navbar-brand js-scroll-trigger" href="/">PrincetonPlaces</a>
+                <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                    data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false"
+                    aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ml-auto my-2 my-lg-0">
+                        <li class="nav-item"><a class="nav-link
+                            js-scroll-trigger" href="logout">Log Out</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <br>
+    <!-- Alert -->
+    {% if status_msg is not none and status_msg != "": %}
+    <div id="myAlert" class="alert alert-success alert-dismissible fade show">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        {{status_msg}}
+    </div>
+    <br>
+    {% endif %}
+    {% if warn_msg is not none and warn_msg != "": %}
+    <div id="myAlert" class="alert alert-danger alert-dismissible fade show">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        {{warn_msg}}
+    </div>
+    <br>
+    {% endif %}
+    <!-- Pin Info -->
+    <section class="page-section" id="pin_info" style="padding-top: 20px;
+          padding-bottom: 20px;">
+        <div class="container">
+            <h2 class="text-center mt-0">{{netid}}'s Liked Photos</h2>
+            <hr class="divider my-4" />
+            <!--
+                These might be helpful for more pin information
+                <h3 class="h4 mb-2">Sturdy Themes</h3>
+                <p class="text-muted mb-0">Our themes are updated regularly to keep them bug free!</p>
+                -->
+        </div>
+    </section>
+    <!-- Photos -->
+    {% from 'like_button.html' import like_button with context %}
+    {% include 'like_button.html' %}
+    <div id="portfolio">
+        <div class="container-fluid p-0">
+            <div class="row no-gutters">
+                {% for photo in photos: %}
+                <div class="col-lg-4 col-sm-6">
+                    <a class="portfolio-box" href="{{photo.getPhoto()}}">
+                        <img class="img-fluid" src="{{photo.getThumbnail()}}" alt="" />
+                        <div class="portfolio-box-caption">
+                            <div class="project-category text-white-50">
+                                {% if photo.getAnon() == true: %}
+                                <strong>Anonymous Student</strong>
+                                {% else: %}
+                                <strong>{{photo.getUser()}}</strong>
+                                {% endif %}
+                                | {{photo.getTime()}}
+                            </div>
+                            <div class="project-name">{{photo.getDescription()}}</div>
+                            {% if photo.getCategories()|length > 0: %}
+                            <div class="project-category text-white-50">
+                                Tags:
+                                {% for category in photo.getCategories() %}
+                                {{category}}{{", " if not loop.last}}
+                                {% endfor %}
+                            </div>
+                            {%  endif %}
+                            {% if netid: %}
+                            {{ like_button(photo) }}
+                            {%  endif %}
+
+
+                            {%  if netid == photo.getUser(): %}
+                            <script>
+                                function delButton(event, photoID) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    let url = 'edit_photo/' + photoID;
+                                    window.location.href = url
+                                }
+                            </script>
+                            <button class="btn btn-light" type="button" onclick="delButton(event,
+                                    '{{photo.getPhotoId()}}')">Edit This Entry</button>
+                            {% endif %}
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% include 'footer.html' %}
+</body>
+
+</html>
